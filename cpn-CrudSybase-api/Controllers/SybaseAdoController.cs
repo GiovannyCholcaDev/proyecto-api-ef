@@ -53,5 +53,13 @@ namespace cpn_CrudSybase_api.Controllers
         }
 
 
+        [HttpPost("StoreProcedureDataSyBase")]
+        public async Task<IActionResult> StoreProcedureDataSyBase([FromBody] ClienteRequest param)
+        {
+            List<CuentaSpDto> response = await _service.SybaseStoreProcedure(param);
+            return Ok(response);
+        }
+
+
     }
 }

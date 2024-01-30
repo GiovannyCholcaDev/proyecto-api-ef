@@ -95,5 +95,36 @@ namespace cpn_CrudSybase_api.Services
             return await _sqlSyBase.exec(cadenaSql, bag, _SybaseConnectionString);
         }
 
+
+        public async Task<List<CuentaSpDto>> SybaseStoreProcedure(ClienteRequest request)
+        {
+            string cadenaSql = "efsp_consulta_test";
+            Dictionary<string, object> bag = new()
+            {
+               { "@cedula", request.Identificacion! }
+            };
+
+            DataSet ds_response = await _sqlSyBase.ExecSP(cadenaSql, bag, _SybaseConnectionString);
+            DataTable dt_response = ds_response.Tables[0];
+            TestConSybaseListResponse result = new();
+            List<CuentaSpDto> spList = new();
+            if (dt_response.Rows.Count > 0)
+            {
+               
+                spList = (from DataRow dr in dt_response.Rows
+                          select new CuentaSpDto()
+                          {
+                              NombreCompleto = dr["cedula"].ToString(),
+                              Cedula = dr["nombreCompleto"].ToString(),
+                              Fecha = DateTime.Parse(dr["fecha"].ToString()!),
+                              Email = dr["email"].ToString(),
+                              Cuenta = dr["cuenta"].ToString(),
+                              Valor = double.Parse(dr["cuenta"].ToString()!)
+                          }).ToList();
+
+            }
+            return spList;
+        }
+
     }
 }

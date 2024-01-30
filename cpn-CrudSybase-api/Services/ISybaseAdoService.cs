@@ -13,5 +13,7 @@ namespace cpn_CrudSybase_api.Services
         Task<bool> SybaseDelete(ClienteRequest request);
 
         Task<bool> SybaseInsert(TestConSybaseRequest testconSybase);
+
+        Task<List<CuentaSpDto>> SybaseStoreProcedure(ClienteRequest request);
     }
 }

@@ -361,9 +361,11 @@ namespace cpn_CrudSybase_api.Util
             return resultado;
         }
 
-        /***
-         **@autor gcholca
-         */
+        
+        /*************
+         **@autor gcholca 
+         *by INSERT, UPDATE, DELETE
+         ***************/
         public async Task<bool> exec(string commandtext, Dictionary<string, object> bag, string _connectionString)
         {
             _Exception = null;
@@ -411,6 +413,65 @@ namespace cpn_CrudSybase_api.Util
                 catch (Exception)
                 {
                     return false;
+                }
+            }
+            finally
+            {
+                CloseConexion();
+            }
+        }
+
+        /*************
+        **@autor gcholca 
+        *by Stored Procedure
+        ***************/
+        public async Task<DataSet> ExecSP(string nameSP, Dictionary<string, object> bag, string _connectionString)
+        {
+            _Exception = null;
+            conexion = null;
+            DataTable resultado = new DataTable();
+            try
+            {
+                conexion = new AseConnection(_connectionString);
+                await conexion.OpenAsync();
+                //command.Connection = conexion;
+                //command.CommandTimeout = 999999999;
+                var command = conexion.CreateCommand();
+                command.CommandText = nameSP;
+                command.CommandType = CommandType.StoredProcedure;
+
+                if (bag != null && bag.Count > 0)
+                {
+                    foreach (KeyValuePair<string, object> entry in bag)
+                    {
+                        // do something with entry.Value or entry.Key
+                        command.Parameters.AddWithValue(entry.Key, entry.Value);
+                    }
+                }
+
+                // Create a DataSet to store the results
+                var dataSet = new DataSet();
+
+                var adapter = new AseDataAdapter(command);
+
+                adapter.Fill(dataSet);
+
+                return dataSet;          
+          
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.StackTrace);
+                Exception = ex;
+                CloseConexion();
+                try
+                {
+                    if (command != null) { command.Dispose(); }
+                    return null!;
+                }
+                catch (Exception)
+                {
+                    return null!;
                 }
             }
             finally
