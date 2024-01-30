@@ -1,4 +1,5 @@
 using cpn_CrudSybase_api.Services;
+using cpn_CrudSybase_api.Util;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,16 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped(typeof(ISybaseAdoService), typeof(SybaseAdoService));
+var configuration = builder.Configuration;
+builder.Services.Configure<Settings>(
+          options =>
+          {
+              //GeneradorRSA rsa = new GeneradorRSA();
+              //options.SybaseConnectionString = rsa.decryptedRSA(configuration.GetValue<string>("ConnectionStrings:SybaseConnectionRSA"));
+              options.SybaseConnectionString = configuration.GetValue<string>("ConnectionStrings:SybaseConnectionRSA");
+          }
+);
+
 
 var app = builder.Build();
 

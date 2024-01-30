@@ -9,5 +9,6 @@
 
         public TResult? Result { get; set; }
 
+
     }
 }

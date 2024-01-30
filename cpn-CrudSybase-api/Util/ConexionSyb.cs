@@ -205,13 +205,13 @@ namespace cpn_CrudSybase_api.Util
                 }
                 try
                 {
-                    conexion = new AseConnection(_connectionString);
-                    await conexion.OpenAsync();
-                    command.Connection = conexion;
-                    command.CommandTimeout = 999999999;
-                    var adapter = new AseDataAdapter(command);
-                    adapter.Fill(resultado);
-                    return true;
+                     conexion = new AseConnection(_connectionString);
+                     await conexion.OpenAsync();
+                     command.Connection = conexion;
+                     command.CommandTimeout = 999999999;
+                     var adapter = new AseDataAdapter(command);
+                     adapter.Fill(resultado);
+                     return true;
                 }
                 catch (Exception ex)
                 {
@@ -254,7 +254,7 @@ namespace cpn_CrudSybase_api.Util
                     Direction = ParameterDirection.Output
                 };
                 command.CommandText = commandtext;
-                command.CommandType = CommandType.StoredProcedure;
+                command.CommandType = CommandType.Text;
                 //command.Parameters.Add(returnValue);
 
                 if (bag != null && bag.Count > 0)
@@ -359,6 +359,64 @@ namespace cpn_CrudSybase_api.Util
             }
 
             return resultado;
+        }
+
+        /***
+         **@autor gcholca
+         */
+        public async Task<bool> exec(string commandtext, Dictionary<string, object> bag, string _connectionString)
+        {
+            _Exception = null;
+            conexion = null;
+            DataTable resultado = new DataTable();
+            try
+            {
+                conexion = new AseConnection(_connectionString);
+                await conexion.OpenAsync();
+                //command.Connection = conexion;
+                //command.CommandTimeout = 999999999;
+                var command = conexion.CreateCommand();
+                command.CommandText = commandtext;
+
+                if (bag != null && bag.Count > 0)
+                {
+                    foreach (KeyValuePair<string, object> entry in bag)
+                    {
+                        // do something with entry.Value or entry.Key
+                        command.Parameters.AddWithValue(entry.Key, entry.Value);
+                    }
+                }
+
+                var recordsModified = command.ExecuteNonQuery();
+
+                if (recordsModified > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.StackTrace);
+                Exception = ex;
+                CloseConexion();
+                try
+                {
+                    if (command != null) { command.Dispose(); }
+                    return false;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+            finally
+            {
+                CloseConexion();
+            }
         }
 
     }
