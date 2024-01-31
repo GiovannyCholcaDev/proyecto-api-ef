@@ -126,5 +126,26 @@ namespace cpn_CrudSybase_api.Services
             return spList;
         }
 
+        public async Task<List<CuentaSpDto>> SybaseStoreProcedureDapper(ClienteRequest request)
+        {
+            try
+            {
+
+                string nombreSP = "efsp_consulta_test";
+                Dictionary<string, object> bag = new()
+                {
+                   { "@cedula", request.Identificacion! }
+                };
+
+                List<CuentaSpDto> resultList = await _sqlSyBase.ExecSPDapper<CuentaSpDto>(nombreSP, bag, _SybaseConnectionString);
+
+                return resultList;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 }

@@ -15,5 +15,7 @@ namespace cpn_CrudSybase_api.Services
         Task<bool> SybaseInsert(TestConSybaseRequest testconSybase);
 
         Task<List<CuentaSpDto>> SybaseStoreProcedure(ClienteRequest request);
+
+        Task<List<CuentaSpDto>> SybaseStoreProcedureDapper(ClienteRequest request);
     }
 }

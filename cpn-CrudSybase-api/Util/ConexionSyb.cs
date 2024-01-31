@@ -5,6 +5,8 @@ using System.Data;
 using AdoNetCore.AseClient;
 using System.Reflection;
 using log4net;
+using System.ComponentModel.Design;
+using Dapper;
 
 namespace cpn_CrudSybase_api.Util
 {
@@ -430,29 +432,27 @@ namespace cpn_CrudSybase_api.Util
             _Exception = null;
             conexion = null;
             DataTable resultado = new DataTable();
+            conexion = new AseConnection(_connectionString);
+            await conexion.OpenAsync();
+            var commandSP = conexion.CreateCommand();
             try
             {
-                conexion = new AseConnection(_connectionString);
-                await conexion.OpenAsync();
-                //command.Connection = conexion;
-                //command.CommandTimeout = 999999999;
-                var command = conexion.CreateCommand();
-                command.CommandText = nameSP;
-                command.CommandType = CommandType.StoredProcedure;
+                commandSP.CommandText = nameSP;
+                commandSP.CommandType = CommandType.StoredProcedure;
 
                 if (bag != null && bag.Count > 0)
                 {
                     foreach (KeyValuePair<string, object> entry in bag)
                     {
                         // do something with entry.Value or entry.Key
-                        command.Parameters.AddWithValue(entry.Key, entry.Value);
+                        commandSP.Parameters.AddWithValue(entry.Key, entry.Value);
                     }
                 }
 
                 // Create a DataSet to store the results
                 var dataSet = new DataSet();
 
-                var adapter = new AseDataAdapter(command);
+                var adapter = new AseDataAdapter(commandSP);
 
                 adapter.Fill(dataSet);
 
@@ -466,7 +466,7 @@ namespace cpn_CrudSybase_api.Util
                 CloseConexion();
                 try
                 {
-                    if (command != null) { command.Dispose(); }
+                    if (commandSP != null) { commandSP.Dispose(); }
                     return null!;
                 }
                 catch (Exception)
@@ -478,6 +478,38 @@ namespace cpn_CrudSybase_api.Util
             {
                 CloseConexion();
             }
+        }
+
+
+        /****
+         * **
+         */
+        public async Task<List<T>> ExecSPDapper<T>(string nameSP, Dictionary<string, object> bag, string _connectionString)
+        {
+            List<T> resultDtoSp;
+            var connection = new AseConnection(_connectionString);
+            try
+            {
+                await connection.OpenAsync();
+
+                resultDtoSp = connection.Query<T>(nameSP, bag, commandType: CommandType.StoredProcedure).ToList();
+
+                return resultDtoSp;
+
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.StackTrace);
+                Exception = ex;
+                CloseConexion();
+                return null!;
+            }
+            finally
+            {
+                CloseConexion();
+            }
+
+           
         }
 
     }
